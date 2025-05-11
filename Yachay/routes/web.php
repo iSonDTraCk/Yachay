@@ -19,6 +19,11 @@ Route::get('/registro/{rol}', [AccesoController::class, 'registro'])->name('acce
 Route::get('/registro/profesor', [AccesoController::class, 'create'])->name('registro.profesor');
 Route::post('/registro/profesor', [AccesoController::class, 'store'])->name('registro.profesor.store');
 
+// Registro de alumno (formulario y guardado)
+Route::get('/registro/alumno', [AccesoController::class, 'createAlumno'])->name('registro.alumno');
+Route::post('/registro/alumno', [AccesoController::class, 'storeAlumno'])->name('registro.alumno.store');
+
+
 // Login (si aplica)
 Route::post('/login', [AccesoController::class, 'login'])->name('acceso.login');
 

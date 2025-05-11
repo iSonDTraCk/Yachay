@@ -44,6 +44,51 @@ class AccesoController extends Controller
         return view("registro.$rol");
     }
 
+    // FORMULARIO DE REGISTRO - PROFESOR
+    public function create()
+    {
+        return view('registro.profesor');
+    }
+
+    // GUARDADO - PROFESOR
+    public function store(Request $request)
+    {
+        $request->validate([
+            'dni' => 'required|digits:8|unique:profesors,dni',
+            'nombre' => 'required|string|max:255',
+            'email' => 'required|email|unique:profesors,email',
+        ]);
+
+        Profesor::create($request->only('dni', 'nombre', 'email'));
+
+        return back()->with('success', 'Profesor registrado correctamente.');
+    }
+
+    // FORMULARIO DE REGISTRO - ALUMNO
+    public function createAlumno()
+    {
+        return view('registro.alumno');
+    }
+
+    // GUARDADO - ALUMNO
+    public function storeAlumno(Request $request)
+    {
+        $request->validate([
+            'codigo' => 'required|string|max:10|unique:alumnos,codigo',
+            'nombre' => 'required|string|max:255',
+            'email' => 'required|email|unique:alumnos,email',
+        ]);
+
+        Alumno::create([
+            'codigo' => $request->codigo,
+            'nombre' => $request->nombre,
+            'email' => $request->email,
+        ]);
+
+        return back()->with('success', 'Alumno registrado exitosamente.');
+    }
+
+    // OPCIONAL: si sigues usando los métodos antiguos
     public function registrarProfesor(Request $request)
     {
         $request->validate([
