@@ -3,113 +3,116 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use App\Models\Alumno;
 use App\Models\Profesor;
 
 class AccesoController extends Controller
 {
+    /**
+     * Muestra la página de bienvenida/login
+     */
     public function index()
     {
         return view('welcome');
     }
 
+    /**
+     * Procesa el login de alumno o profesor usando DNI y contraseña
+     */
     public function login(Request $request)
     {
         $request->validate([
-            'dni' => 'required|digits:8',
-            'rol' => 'required|in:alumno,profesor',
+            'dni'      => 'required|digits:8',
+            'password' => 'required|string',
+            'rol'      => 'required|in:alumno,profesor',
         ]);
 
-        if ($request->rol === 'alumno') {
-            $user = Alumno::where('dni', $request->dni)->first();
-            if ($user) {
-                return redirect()->route('alumno.home');
-            }
-        } else {
-            $user = Profesor::where('dni', $request->dni)->first();
-            if ($user) {
-                return redirect()->route('profesor.home');
-            }
+        $user = $request->rol === 'alumno'
+            ? Alumno::where('dni', $request->dni)->first()
+            : Profesor::where('dni', $request->dni)->first();
+
+        if ($user && Hash::check($request->password, $user->password)) {
+            // Guardar el rol en sesión para controlar vistas y permisos
+            session(['rol' => $request->rol]);
+
+            return redirect()
+                ->route("{$request->rol}.home")
+                ->with('success', 'Bienvenido, ' . $user->nombre . '!');
         }
 
-        return back()->with('error', 'DNI no encontrado. Puedes crear una cuenta.');
+        return back()->with('error', 'Credenciales incorrectas.');
     }
 
-    public function registro($rol)
+    /**
+     * Muestra el formulario de registro según el rol ('alumno' o 'profesor')
+     */
+    public function registro(string $rol)
     {
-        if (!in_array($rol, ['profesor', 'alumno'])) {
+        if (! in_array($rol, ['alumno', 'profesor'])) {
             abort(404);
         }
 
-        return view("registro.$rol");
+        return view("registro.{$rol}");
     }
 
-    // FORMULARIO DE REGISTRO - PROFESOR
-    public function create()
-    {
-        return view('registro.profesor');
-    }
-
-    // GUARDADO - PROFESOR
-    public function store(Request $request)
-    {
-        $request->validate([
-            'dni' => 'required|digits:8|unique:profesors,dni',
-            'nombre' => 'required|string|max:255',
-            'email' => 'required|email|unique:profesors,email',
-        ]);
-
-        Profesor::create($request->only('dni', 'nombre', 'email'));
-
-        return back()->with('success', 'Profesor registrado correctamente.');
-    }
-
-    // FORMULARIO DE REGISTRO - ALUMNO
-    public function createAlumno()
-    {
-        return view('registro.alumno');
-    }
-
-    // GUARDADO - ALUMNO
+    /**
+     * Guarda un nuevo alumno (dni, nombre, email y contraseña)
+     */
     public function storeAlumno(Request $request)
     {
         $request->validate([
-            'codigo' => 'required|string|max:10|unique:alumnos,codigo',
-            'nombre' => 'required|string|max:255',
-            'email' => 'required|email|unique:alumnos,email',
+            'dni'                   => 'required|digits:8|unique:alumnos,dni',
+            'nombre'                => 'required|string|max:255',
+            'email'                 => 'required|email|unique:alumnos,email',
+            'password'              => 'required|string|min:8|confirmed',
         ]);
 
         Alumno::create([
-            'codigo' => $request->codigo,
-            'nombre' => $request->nombre,
-            'email' => $request->email,
+            'dni'      => $request->dni,
+            'nombre'   => $request->nombre,
+            'email'    => $request->email,
+            'password' => Hash::make($request->password),
         ]);
 
-        return back()->with('success', 'Alumno registrado exitosamente.');
+        return redirect()->route('alumno.home')
+                         ->with('success', 'Alumno registrado exitosamente.');
     }
 
-    // OPCIONAL: si sigues usando los métodos antiguos
-    public function registrarProfesor(Request $request)
+    /**
+     * Guarda un nuevo profesor (dni, nombre, email y contraseña)
+     */
+    public function storeProfesor(Request $request)
     {
         $request->validate([
-            'dni' => 'required|digits:8|unique:profesors,dni',
-            'nombre' => 'required|string|max:255',
+            'dni'                   => 'required|digits:8|unique:profesors,dni',
+            'nombre'                => 'required|string|max:255',
+            'email'                 => 'required|email|unique:profesors,email',
+            'password'              => 'required|string|min:8|confirmed',
         ]);
 
-        Profesor::create($request->only('dni', 'nombre'));
+        Profesor::create([
+            'dni'      => $request->dni,
+            'nombre'   => $request->nombre,
+            'email'    => $request->email,
+            'password' => Hash::make($request->password),
+        ]);
 
-        return redirect()->route('acceso.index')->with('success', 'Profesor registrado correctamente');
+        return redirect()->route('profesor.home')
+                         ->with('success', 'Profesor registrado correctamente.');
     }
 
-    public function registrarAlumno(Request $request)
+    public function logout(Request $request)
     {
-        $request->validate([
-            'dni' => 'required|digits:8|unique:alumnos,dni',
-            'nombre' => 'required|string|max:255',
-        ]);
+        // Limpia todos los datos de sesión (incluido 'rol')
+        $request->session()->flush();
 
-        Alumno::create($request->only('dni', 'nombre'));
+        // Opcional: invalidar la sesión y regenerar el token CSRF
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
-        return redirect()->route('acceso.index')->with('success', 'Alumno registrado correctamente');
+        return redirect()->route('acceso.index');
     }
+    
 }
+
