@@ -27,7 +27,7 @@
     <h4 class="mb-3 text-primary"><i class="fas fa-book"></i> Mis Clases</h4>
     <div class="scroll-wrapper mb-5">
         <div class="scroll-container d-flex flex-nowrap gap-3">
-            @for ($i = 1; $i <= 5; $i++)
+            @for ($i = 1; $i <= 4; $i++)
             <div class="card shadow-sm flex-shrink-0" style="width: 300px;">
                 <div class="card-body text-center">
                     <div class="fs-1 text-primary mb-2"><i class="fas fa-book-open"></i></div>
