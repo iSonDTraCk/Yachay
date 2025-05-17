@@ -9,13 +9,18 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
         Schema::create('alumnos', function (Blueprint $table) {
-            $table->id();
+            $table->string('dni', 8)->primary();  // Clave primaria personalizada
+            $table->string('nombre');
+            $table->string('email')->unique();   // Usamos 'email', no 'correo'
+            $table->string('password');
+            $table->rememberToken();             // Opcional para login
             $table->timestamps();
         });
     }
+
 
     /**
      * Reverse the migrations.

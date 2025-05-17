@@ -7,7 +7,6 @@
     <div style="width: 100%; max-width: 500px; background: white; padding: 32px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
         <h2 style="margin-bottom: 24px; color: #4f46e5; text-align: center;">Registro de Profesor</h2>
 
-        {{-- Mensajes de error --}}
         @if ($errors->any())
             <div style="background: #fee2e2; color: #b91c1c; padding: 12px; border-radius: 6px; margin-bottom: 16px;">
                 <ul style="margin: 0; padding-left: 20px;">
@@ -18,14 +17,12 @@
             </div>
         @endif
 
-        {{-- Mensaje de éxito --}}
         @if(session('success'))
             <div style="background: #d1fae5; color: #065f46; padding: 12px; border-radius: 6px; margin-bottom: 16px;">
                 {{ session('success') }}
             </div>
         @endif
 
-        {{-- Formulario de registro --}}
         <form action="{{ route('registro.profesor.store') }}" method="POST">
             @csrf
 
@@ -43,10 +40,22 @@
                     style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px;">
             </div>
 
-            <div style="margin-bottom: 24px;">
+            <div style="margin-bottom: 16px;">
                 <label for="email" style="display: block; font-weight: bold; margin-bottom: 6px;">Correo electrónico</label>
                 <input type="email" name="email" id="email" required
                     value="{{ old('email') }}"
+                    style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px;">
+            </div>
+
+            <div style="margin-bottom: 16px;">
+                <label for="password" style="display: block; font-weight: bold; margin-bottom: 6px;">Contraseña</label>
+                <input type="password" name="password" id="password" required minlength="8"
+                    style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px;">
+            </div>
+
+            <div style="margin-bottom: 24px;">
+                <label for="password_confirmation" style="display: block; font-weight: bold; margin-bottom: 6px;">Confirmar contraseña</label>
+                <input type="password" name="password_confirmation" id="password_confirmation" required minlength="8"
                     style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px;">
             </div>
 
